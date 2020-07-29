@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="description" content="Fonts supported by browser versions over the years" />
+    <meta name="keywords" content="TTF, OTF, WOFF, Fonts, Browser, Caniuse" />
+    <meta name="author" content="Shardul Saiya" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Font Timeline</title>
+    <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+    <script src="bundle.js"> </script>
+    <script>
+        function onChange(selectObject) {
+            var fontType = selectObject.value;
+            if (fontType != "select") {
+                console.log("Getting Data for " + fontType);
+                var data = getData(fontType);
+                console.log(data);
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <h1>Font Timeline</h1>
+    </header>
+    <label for="fonts">Choose a font:</label>
+    <select name="fonts" id="fontsMenu" onchange="onChange(this)">
+        <option selected value="select">Select</option>
+        <option value="eot">EOT</option>
+        <option value="ttf">TTF</option>
+        <option value="woff">WOFF</option>
+        <option value="woff2">WOFF2</option>
+    </select>
+
+    <div id="myChart"></div>
+    <a class="zc-ref" href="https://www.zingchart.com">Powered by ZingChart</a>
+    </div>
+    <script>
+        window.addEventListener("load", () => {
+            zingchart.render({
+                id: "myChart",
+                data: {
+                    type: "line",
+                    series: [
+                        { values: [54, 23, 34, 23, 43] },
+                        { values: [10, 15, 16, 20, 40] },
+                    ],
+                },
+            });
+        });
+    </script>
+
+</body>
+
+</html>

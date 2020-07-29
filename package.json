@@ -1,0 +1,16 @@
+{
+  "name": "font-timeline",
+  "version": "1.0.0",
+  "description": "Create a visualization for font usage in different browsers over time",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Shardul Saiya",
+  "license": "ISC",
+  "dependencies": {
+    "JSONStream": "^1.3.5",
+    "event-stream": "^4.0.1",
+    "request": "^2.88.2"
+  }
+}

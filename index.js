@@ -1,9 +1,10 @@
 var JSONStream = require("JSONStream");
 var es = require("event-stream");
 var request = require("request");
+var fs = require("fs");
 
 const url = "https://raw.githubusercontent.com/Fyrd/caniuse/master/data.json";
-let myConfig = {
+const myConfig = {
   type: "pie",
   title: {
     text: "Browser Support",
@@ -12,10 +13,11 @@ let myConfig = {
   series: [],
 };
 
-global.myConfig = myConfig;
+var userAgentData = {};
+global.fontDataConfigs = {};
 
-async function getData(fontType) {
-  request(url)
+function getData(fontType) {
+  fs.createReadStream("data.json", "utf8")
     .pipe(JSONStream.parse("*." + fontType))
     .pipe(
       es.mapSync(function (data) {
@@ -36,15 +38,20 @@ async function getData(fontType) {
 }
 
 function makeChartData(isSupported) {
-  myConfig.series = [];
+  var newConfig = myConfig;
+  newConfig.series = [];
   for (var browser in userAgentData) {
     var browserSupportData = {};
+    var browserNoSupportData = {};
     browserSupportData.text = browser;
+    browserNoSupportData.text = browser;
     let totalUsagePercentage = 0;
+    let notSupportedPercent = 0;
     for (var version in userAgentData[browser]) {
       if (isSupported[browser][version]) {
-        totalUsagePercentage =
-          totalUsagePercentage + userAgentData[browser][version];
+        totalUsagePercentage += userAgentData[browser][version];
+      } else {
+        notSupportedPercent += userAgentData[browser][version];
       }
     }
 
@@ -52,19 +59,44 @@ function makeChartData(isSupported) {
       browserSupportData.detatched = true;
     }
     browserSupportData.values = [totalUsagePercentage];
-    browserSupportData.color = "#00ff00"
+    browserSupportData.backgroundColor = "#00ff00";
 
-    myConfig.series.push(browserSupportData);
+    browserNoSupportData.values = [notSupportedPercent];
+    browserNoSupportData.backgroundColor = "#ff0000";
+
+    newConfig.series.push(browserSupportData);
+    newConfig.series.push(browserNoSupportData);
   }
-  return myConfig;
+  console.log(newConfig);
+  return newConfig;
 }
 
-function getUserAgentData() {
-  request(url)
+//Server code to update data every x time
+var cron = require("node-cron");
+
+function schedule() {
+  cron.schedule("* * * * *", () => {
+    console.log("Updating Data");
+    updateDataInServer();
+    updateUserAgentData();
+    updateFontDataInServer();
+    console.log("Done Updating");
+  });
+}
+function updateDataInServer() {
+  request(url, function (error, response, body) {
+    fs.writeFile("data.json", body, "utf-8", (err) => {
+      // throws an error, you could also catch it here
+      if (err) throw err;
+    });
+  });
+}
+
+function updateUserAgentData() {
+  fs.createReadStream("data.json", "utf8")
     .pipe(JSONStream.parse("agents"))
     .pipe(
       es.mapSync(function (data) {
-        var userAgentData = {};
         for (var browser in data) {
           userAgentData[browser] = {};
           for (var version in data[browser].usage_global) {
@@ -72,10 +104,17 @@ function getUserAgentData() {
               data[browser]["usage_global"][version];
           }
         }
-        global.userAgentData = userAgentData;
-        // console.log(userAgentData);
       })
     );
 }
-getUserAgentData();
-global.getData = getData;
+
+function updateFontDataInServer() {
+  const fonts = ["eot", "ttf", "woff", "woff2"];
+  // var fontDataConfigs = {};
+  fonts.forEach((font) => {
+    // fontDataConfigs[font] = getData(font);
+    global.fontDataConfigs[font] = getData(font);
+  });
+}
+
+schedule();

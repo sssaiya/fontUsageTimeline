@@ -7,28 +7,25 @@
     <meta name="keywords" content="TTF, OTF, WOFF, Fonts, Browser, Caniuse" />
     <meta name="author" content="Shardul Saiya" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Font Timeline</title>
+    <title>Font Support</title>
     <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
-    <script src="bundle.js"> </script>
+    <!-- <script src="bundle.js"> </script> -->
     <script>
         function onChange(selectObject) {
             var fontType = selectObject.value;
             if (fontType != "select") {
-                console.log("Getting Data for " + fontType);
-                getData(fontType);
+                zingchart.render({
+                    id: 'myChart',
+                    data: fontDataConfigs[fontType],
+                });
             }
-
-            zingchart.render({
-                id: 'myChart',
-                data: myConfig,
-            });
         }
     </script>
 </head>
 
 <body>
     <header>
-        <h1>Font Timeline</h1>
+        <h1>Font Support</h1>
     </header>
     <label for="fonts">Choose a font:</label>
     <select name="fonts" id="fontsMenu" onchange="onChange(this)">
